@@ -4,10 +4,9 @@ function bgfci_process_fluentcrm_contact($payload) {
     // Log that a payload was received
     // Log key fields from payload for debugging
     $log_fields = [
+        'email' => $payload['EmailAddress'] ?? '',
         'first_name' => $payload['FirstName'] ?? '',
         'last_name' => $payload['LastName'] ?? '',
-        'email' => $payload['EmailAddress'] ?? '',
-        'birth_time' => $payload['Properties']['BirthDateLocalStandard'] ?? '',
         'birth_time_utc' => $payload['Properties']['BirthDateUtcStandard'] ?? '',
         'birth_place' => $payload['BirthPlace'] ?? ''
     ];
@@ -77,19 +76,19 @@ function bgfci_process_fluentcrm_contact($payload) {
     $api = FluentCrmApi('contacts');
     $contact = $api->getContact($email);
     if ($contact && !empty($contact->id)) {
-        // Update only custom fields
+        // Update ONLY custom fields for existing contact
+        $update_data = [ 'custom_values' => $custom_fields ];
         // Get existing lists and merge with the new one (if not already present)
         $existing_lists = isset($contact->lists) && is_array($contact->lists) ? $contact->lists : [];
         $merged_lists = array_unique(array_merge($existing_lists, $lists));
-        $update_data = [ 'custom_values' => $custom_fields ];
         if (!empty($merged_lists)) {
             $update_data['lists'] = $merged_lists;
-            bgfci_log('Final FluentCRM lists assigned to contact: ' . implode(',', $merged_lists), 'debug');
+            bgfci_log('Final FluentCRM lists assigned to contact.', 'debug');
         }
         $result = $api->update($contact->id, $update_data);
         bgfci_log('FluentCRM API update() result: ' . print_r($result, true), 'debug');
         return [
-            'log' => "Updated custom fields for existing FluentCRM contact ID {$contact->id} (email: $email)",
+            'log' => "Updated FluentCRM contact custom fields.",
             'log_level' => 'info'
         ];
     } else {

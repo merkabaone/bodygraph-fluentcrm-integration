@@ -29,37 +29,14 @@ require_once __DIR__ . '/admin-settings.php';
  * @param string $message The message to log.
  * @param string $level Log level: info, debug, warning, error.
  */
-function bgfci_log($message, $level = 'info') {
-    $log_dir = plugin_dir_path(__FILE__);
-    $log_file = $log_dir . 'bgfci.log';
-    $timestamp = date('Y-m-d H:i:s');
-    $entry = "[$timestamp][" . strtoupper($level) . "] $message\n";
 
-    // Try to write to the custom log file
-    $written = false;
-    if (is_writable($log_dir) || (!file_exists($log_file) && is_writable($log_dir))) {
-        $fp = @fopen($log_file, 'a');
-        if ($fp) {
-            if (flock($fp, LOCK_EX)) {
-                fwrite($fp, $entry);
-                flock($fp, LOCK_UN);
-                $written = true;
-            }
-            fclose($fp);
-        }
-    }
-    // Fallback to error_log if unable to write to file
-    if (! $written) {
-        error_log('[BGFCI][' . strtoupper($level) . "] $message");
-    }
-}
 
 require_once __DIR__ . '/bgfcfi-fluentcrm-mapping.php';
 require_once __DIR__ . '/admin-settings.php';
 
 // Test the logger on plugin load
 add_action('plugins_loaded', function() {
-    bgfci_log('Test log: Plugin loaded successfully.', 'debug');
+    BGFCI_Logger::log('Test log: Plugin loaded successfully.', 'debug');
 });
 
 add_action( 'rest_api_init', function () {
@@ -72,27 +49,40 @@ add_action( 'rest_api_init', function () {
 
 function bgfci_receive_webhook( $request ) {
     try {
+        // --- Simple IP-based rate limiting: max 10 requests per 10 minutes per IP ---
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : 'unknown';
+        $transient_key = 'bgfci_webhook_ip_' . md5($ip);
+        $count = (int) get_transient($transient_key);
+        if ($count >= 10) {
+            BGFCI_Logger::log("Rate limit exceeded for IP $ip", 'warning');
+            return new WP_REST_Response([
+                'success' => false,
+                'message' => 'Rate limit exceeded. Try again later.',
+                'received_at' => date('c')
+            ], 429);
+        }
+        set_transient($transient_key, $count + 1, 10 * MINUTE_IN_SECONDS);
+        // -------------------------------------------------------------------------
         // Get raw request body
         $raw_body = file_get_contents('php://input');
-        
         // Try to decode JSON
         $payload = json_decode($raw_body, true);
         $is_json = json_last_error() === JSON_ERROR_NONE;
-        
         // Log that a webhook payload was received
-        bgfci_log('Webhook payload received at endpoint.', 'info');
-
+        BGFCI_Logger::log('Webhook payload received at endpoint.', 'info');
         $result = null;
         $success = false;
         $message = '';
+        // Sanitize and validate input
         if ($is_json && isset($payload['EmailAddress'])) {
+            $payload['EmailAddress'] = sanitize_email($payload['EmailAddress']);
             $result = bgfci_process_fluentcrm_contact($payload);
-            bgfci_log($result['log'], $result['log_level']);
+            BGFCI_Logger::log($result['log'], $result['log_level']);
             $success = ($result['log_level'] === 'info');
             $message = $result['log'];
         } else {
             $message = 'Webhook payload missing or invalid email address.';
-            bgfci_log($message, 'warning');
+            BGFCI_Logger::log($message, 'warning');
         }
         if ($success) {
             return new WP_REST_Response([
@@ -107,9 +97,8 @@ function bgfci_receive_webhook( $request ) {
                 'received_at' => date('c')
             ], 400);
         }
-        
     } catch (Exception $e) {
-        bgfci_log('Webhook processing exception: ' . $e->getMessage(), 'error');
+        BGFCI_Logger::log('Webhook processing exception: ' . $e->getMessage(), 'error');
         return new WP_REST_Response([
             'success' => false,
             'message' => 'Internal server error',

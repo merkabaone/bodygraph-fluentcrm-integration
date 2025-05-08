@@ -2,21 +2,24 @@
 
 ## Supported Versions
 
-We are committed to ensuring the security of the BodyGraph FluentCRM Integration plugin. Below are the versions of the plugin that are currently being supported with security updates.
-
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+| 1.2.x   | :white_check_mark: |
+| 1.1.x   | :white_check_mark: |
+| < 1.1   | :x:                |
+
+## Security Practices
+- **Input validation/sanitization**: All webhook and admin input is sanitized and validated.
+- **Output escaping**: All admin UI output is escaped.
+- **Nonce and capability checks**: All admin actions/forms are protected by nonces and require admin capability.
+- **Rate limiting**: Webhook endpoint is protected by IP-based rate limiting (10 requests per 10 minutes per IP).
+- **Logging policy**: Only summary logs by default; detailed logs are opt-in. No secrets or sensitive PII are logged.
+- **No secrets in repo**: No hardcoded secrets or sensitive data are committed to the repository.
 
 ## Reporting a Vulnerability
 
-We take all security bugs in this plugin seriously. Thank you for improving the security of our plugin. We appreciate your efforts and responsible disclosure and will make every effort to acknowledge your contributions.
+We take all security bugs in this plugin seriously. Please email us at support@merkaba.one with a detailed description of the issue, steps to reproduce, and any relevant information. **Do not create a public GitHub issue for security vulnerabilities.**
 
-To report a security vulnerability, please email us directly at support@merkaba.one with a detailed description of the issue, the steps to reproduce it, and any relevant information. **Please do not create a public GitHub issue for security vulnerabilities.**
-
-You can expect a response from us within 48-72 hours acknowledging receipt of your report. We will work with you to understand the scope of the vulnerability and will keep you informed about our progress in addressing it.
-
-We aim to address critical vulnerabilities as quickly as possible. Once a fix is developed and tested, we will release a new version of the plugin. We will coordinate with you on the public disclosure of the vulnerability if you wish.
+You can expect a response within 48-72 hours. We will coordinate with you on remediation and public disclosure as appropriate.
 
 Thank you for helping keep BodyGraph FluentCRM Integration and its users safe.

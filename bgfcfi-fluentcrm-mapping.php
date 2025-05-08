@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/includes/class-bgfci-logger.php';
+require_once __DIR__ . '/includes/class-bgfci-fluentcrm.php';
 // Map incoming JSON to FluentCRM fields and create/update contact
 function bgfci_process_fluentcrm_contact($payload) {
     // Log that a payload was received
@@ -11,7 +13,7 @@ function bgfci_process_fluentcrm_contact($payload) {
         'birth_time_utc' => $payload['Properties']['BirthDateUtcStandard'] ?? '',
         'birth_place' => $payload['BirthPlace'] ?? ''
     ];
-    bgfci_log('Webhook payload summary: ' . json_encode($log_fields), 'info');
+    BGFCI_Logger::log('Webhook payload summary: ' . json_encode($log_fields), 'info');
     // Standard FluentCRM fields
     $standard_fields = [
         'prefix' => $payload['NamePrefix'] ?? '',
@@ -58,58 +60,14 @@ function bgfci_process_fluentcrm_contact($payload) {
         'payload' => json_encode($payload), // Store full payload as string
     ];
     // Log the mapped fields to be sent to FluentCRM
-    bgfci_log('Mapping webhook payload to FluentCRM fields for processing.', 'debug');
+    BGFCI_Logger::log('Mapping webhook payload to FluentCRM fields for processing.', 'debug');
     // Apply FluentCRM List ID from settings if set
     $list_id = get_option('bgfci_fluentcrm_list_id');
     $lists = [];
     if (!empty($list_id)) {
         $lists[] = $list_id;
-        bgfci_log('Applying FluentCRM List ID: ' . $list_id, 'debug');
+        BGFCI_Logger::log('Applying FluentCRM List ID: ' . $list_id, 'debug');
     }
-    // FluentCRM API
-    if (!function_exists('FluentCrmApi')) {
-        return ['log' => 'FluentCRM not installed or API missing.', 'log_level' => 'error'];
-    }
-    $email = $standard_fields['email'];
-    if (empty($email)) {
-        return ['log' => 'No email found in webhook payload.', 'log_level' => 'warning'];
-    }
-    $api = FluentCrmApi('contacts');
-    $contact = $api->getContact($email);
-    if ($contact && !empty($contact->id)) {
-        // Use createOrUpdate for updating existing contact (more reliable for custom fields)
-        $update_data = $custom_fields;
-        $update_data['email'] = $email;
-        // Always add the list from settings, merging if necessary
-        $existing_lists = isset($contact->lists) && is_array($contact->lists) ? $contact->lists : [];
-        $merged_lists = array_unique(array_merge($existing_lists, $lists));
-        if (!empty($merged_lists)) {
-            $update_data['lists'] = $merged_lists;
-            bgfci_log('Final FluentCRM lists assigned to contact: ' . json_encode($merged_lists), 'debug');
-        }
-        bgfci_log('Updating FluentCRM contact using createOrUpdate(). Data: ' . print_r($update_data, true), 'debug');
-        $result = $api->createOrUpdate($update_data);
-        if (empty($result) || !is_array($result)) {
-            bgfci_log('FluentCRM API createOrUpdate() returned empty or invalid response: ' . print_r($result, true), 'error');
-        } else {
-            bgfci_log('FluentCRM API createOrUpdate() result: ' . print_r($result, true), 'debug');
-        }
-        return [
-            'log' => "Updated FluentCRM contact custom fields (via createOrUpdate).",
-            'log_level' => 'info'
-        ];
-    } else {
-        // Create new contact with all fields
-        $data = array_merge($standard_fields, [ 'custom_values' => $custom_fields ]);
-        if (!empty($lists)) {
-            $data['lists'] = $lists;
-            bgfci_log('Final FluentCRM lists assigned to contact: ' . implode(',', $lists), 'debug');
-        }
-        $result = $api->createOrUpdate($data);
-        bgfci_log('FluentCRM API createOrUpdate() result: ' . print_r($result, true), 'debug');
-        return [
-            'log' => "Created new FluentCRM contact for $email with standard & custom fields.",
-            'log_level' => 'info'
-        ];
-    }
+    // Delegate to modular FluentCRM integration
+    return BGFCI_FluentCRM::create_or_update_contact($standard_fields, $custom_fields, $lists);
 }

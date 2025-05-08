@@ -1,59 +1,54 @@
-# WordPress specific
-wp-config.php
-*.log
-sitemap.xml
-sitemap.xml.gz
-*.swp
-*.swo
+# WordPress plugin .gitignore for BodyGraph FluentCRM Integration
 
-# IDE
+# WordPress config and secrets
+wp-config.php
+local-config.php
+config.php
+bgfc-config.php
+
+# Logs
+*.log
+bgfci.log
+debug.log
+npm-debug.log
+
+# IDE/editor files
 .idea/
 .vscode/
 *.sublime-workspace
 *.sublime-project
 
-# OS
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Build
+# Build and dist
 *.zip
 *.tar.gz
+dist/
+build/
 
-# Plugin specific
+# Plugin-specific backups and temp
 *.php.bak
 *.php.save
 *.php~
 *.php.swp
 *.php.swo
-
-# Database
-*.sql
-*.sql.gz
-*.sql.zip
-
-# Local development
-local-config.php
-
-npm-debug.log
-
-# Build files
-dist/
-build/
-# Plugin Specific - CRITICAL
-# config.php
-# bgfc-config.php
-debug.log
-
-# Compiled assets
-# css/main.css.map
-
-# Backup files
 *~
 *.bak
 *.tmp
 
+# Database dumps
+*.sql
+*.sql.gz
+*.sql.zip
+
 # Archives
-*.zip
-*.tar.gz
 *.rar
+
+# Sitemaps
+sitemap.xml
+sitemap.xml.gz
+
+# Compiled assets
+# css/main.css.map

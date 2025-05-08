@@ -77,9 +77,9 @@ function bgfci_process_fluentcrm_contact($payload) {
     $api = FluentCrmApi('contacts');
     $contact = $api->getContact($email);
     if ($contact && !empty($contact->id)) {
-        // Update ONLY custom fields for existing contact
-        // For FluentCRM update(), send custom fields flat at root
+        // Use createOrUpdate for updating existing contact (more reliable for custom fields)
         $update_data = $custom_fields;
+        $update_data['email'] = $email;
         // Always add the list from settings, merging if necessary
         $existing_lists = isset($contact->lists) && is_array($contact->lists) ? $contact->lists : [];
         $merged_lists = array_unique(array_merge($existing_lists, $lists));
@@ -87,16 +87,15 @@ function bgfci_process_fluentcrm_contact($payload) {
             $update_data['lists'] = $merged_lists;
             bgfci_log('Final FluentCRM lists assigned to contact: ' . json_encode($merged_lists), 'debug');
         }
-        bgfci_log('Updating FluentCRM contact ID: ' . $contact->id, 'debug');
-        bgfci_log('Update data: ' . print_r($update_data, true), 'debug');
-        $result = $api->update($contact->id, $update_data);
+        bgfci_log('Updating FluentCRM contact using createOrUpdate(). Data: ' . print_r($update_data, true), 'debug');
+        $result = $api->createOrUpdate($update_data);
         if (empty($result) || !is_array($result)) {
-            bgfci_log('FluentCRM API update() returned empty or invalid response: ' . print_r($result, true), 'error');
+            bgfci_log('FluentCRM API createOrUpdate() returned empty or invalid response: ' . print_r($result, true), 'error');
         } else {
-            bgfci_log('FluentCRM API update() result: ' . print_r($result, true), 'debug');
+            bgfci_log('FluentCRM API createOrUpdate() result: ' . print_r($result, true), 'debug');
         }
         return [
-            'log' => "Updated FluentCRM contact custom fields.",
+            'log' => "Updated FluentCRM contact custom fields (via createOrUpdate).",
             'log_level' => 'info'
         ];
     } else {

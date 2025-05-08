@@ -2,7 +2,7 @@
 /*
 Plugin Name: BodyGraph FluentCRM Integration
 Description: Minimal plugin to expose a REST API endpoint for receiving BodyGraph webhooks. v1.2 barebones.
-Version: 1.2.1
+Version: 1.2.2
 Author: Erik Desrosiers
 */
 
@@ -87,7 +87,7 @@ function bgfci_receive_webhook( $request ) {
             $is_json ? print_r($payload, true) : 'Not JSON'
         );
         
-        error_log('[BGFCI] ' . $log_message);
+        bgfci_log($log_message, 'info');
         
         // Return response with detailed information
         return rest_ensure_response([

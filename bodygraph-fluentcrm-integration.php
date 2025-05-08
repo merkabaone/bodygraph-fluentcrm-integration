@@ -2,13 +2,61 @@
 /*
 Plugin Name: BodyGraph FluentCRM Integration
 Description: Minimal plugin to expose a REST API endpoint for receiving BodyGraph webhooks. v1.2 barebones.
-Version: 1.2.0
+Version: 1.2.1
 Author: Erik Desrosiers
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
+
+/**
+ * Custom logging function for BGFCI plugin.
+ * Logs only if WP_DEBUG is true.
+ *
+ * @param string $message The message to log.
+ * @param string $level Log level: info, debug, warning, error.
+ */
+/**
+ * Custom logging function for BGFCI plugin.
+ * Logs to a dedicated file in the plugin directory (bgfci.log).
+ * Falls back to error_log if file is not writable.
+ *
+ * Log file location: wp-content/plugins/bodygraph-fluentcrm-integration/bgfci.log
+ *
+ * @param string $message The message to log.
+ * @param string $level Log level: info, debug, warning, error.
+ */
+function bgfci_log($message, $level = 'info') {
+    $log_dir = plugin_dir_path(__FILE__);
+    $log_file = $log_dir . 'bgfci.log';
+    $timestamp = date('Y-m-d H:i:s');
+    $entry = "[$timestamp][" . strtoupper($level) . "] $message\n";
+
+    // Try to write to the custom log file
+    $written = false;
+    if (is_writable($log_dir) || (!file_exists($log_file) && is_writable($log_dir))) {
+        $fp = @fopen($log_file, 'a');
+        if ($fp) {
+            if (flock($fp, LOCK_EX)) {
+                fwrite($fp, $entry);
+                flock($fp, LOCK_UN);
+                $written = true;
+            }
+            fclose($fp);
+        }
+    }
+    // Fallback to error_log if unable to write to file
+    if (! $written) {
+        error_log('[BGFCI][' . strtoupper($level) . "] $message");
+    }
+}
+
+
+// Test the logger on plugin load
+add_action('plugins_loaded', function() {
+    bgfci_log('Test log: Plugin loaded successfully.', 'debug');
+});
 
 add_action( 'rest_api_init', function () {
     register_rest_route( 'bodygraph-fluentcrm/v1', '/webhook', array(

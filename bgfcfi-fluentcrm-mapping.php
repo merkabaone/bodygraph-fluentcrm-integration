@@ -8,6 +8,7 @@ function bgfci_process_fluentcrm_contact($payload) {
         'last_name' => $payload['LastName'] ?? '',
         'email' => $payload['EmailAddress'] ?? '',
         'birth_time' => $payload['Properties']['BirthDateLocalStandard'] ?? '',
+        'birth_time_utc' => $payload['Properties']['BirthDateUtcStandard'] ?? '',
         'birth_place' => $payload['BirthPlace'] ?? ''
     ];
     bgfci_log('Webhook payload summary: ' . json_encode($log_fields), 'info');
@@ -54,6 +55,7 @@ function bgfci_process_fluentcrm_contact($payload) {
         'definition' => $payload['Properties']['Definition']['option'] ?? '',
         'company' => $payload['Company'] ?? '',
         'role' => $payload['Role'] ?? '',
+        'payload' => json_encode($payload), // Store full payload as string
     ];
     // Log the mapped fields to be sent to FluentCRM
     bgfci_log('Mapping webhook payload to FluentCRM fields for processing.', 'debug');

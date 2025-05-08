@@ -78,7 +78,8 @@ function bgfci_process_fluentcrm_contact($payload) {
     $contact = $api->getContact($email);
     if ($contact && !empty($contact->id)) {
         // Update ONLY custom fields for existing contact
-        $update_data = [ 'custom_fields' => $custom_fields ];
+        // For FluentCRM update(), send custom fields flat at root
+        $update_data = $custom_fields;
         // Always add the list from settings, merging if necessary
         $existing_lists = isset($contact->lists) && is_array($contact->lists) ? $contact->lists : [];
         $merged_lists = array_unique(array_merge($existing_lists, $lists));

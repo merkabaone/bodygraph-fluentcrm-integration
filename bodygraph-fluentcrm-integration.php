@@ -2,7 +2,7 @@
 /*
 Plugin Name: BodyGraph FluentCRM Integration
 Description: Minimal plugin to expose a REST API endpoint for receiving BodyGraph webhooks. v1.2 barebones.
-Version: 1.2.4
+Version: 1.2.5
 Author: Erik Desrosiers
 */
 
@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/bgfcfi-fluentcrm-mapping.php';
+require_once __DIR__ . '/admin-settings.php';
 /**
  * Custom logging function for BGFCI plugin.
  * Logs only if WP_DEBUG is true.
@@ -54,6 +55,7 @@ function bgfci_log($message, $level = 'info') {
 }
 
 require_once __DIR__ . '/bgfcfi-fluentcrm-mapping.php';
+require_once __DIR__ . '/admin-settings.php';
 
 // Test the logger on plugin load
 add_action('plugins_loaded', function() {

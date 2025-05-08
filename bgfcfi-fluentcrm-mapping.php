@@ -50,6 +50,13 @@ function bgfci_process_fluentcrm_contact($payload) {
     // Log the mapped fields to be sent to FluentCRM
     bgfci_log('FluentCRM standard fields to input: ' . print_r($standard_fields, true), 'debug');
     bgfci_log('FluentCRM custom fields to input: ' . print_r($custom_fields, true), 'debug');
+    // Apply FluentCRM List ID from settings if set
+    $list_id = get_option('bgfci_fluentcrm_list_id');
+    $lists = [];
+    if (!empty($list_id)) {
+        $lists[] = $list_id;
+        bgfci_log('Applying FluentCRM List ID: ' . $list_id, 'debug');
+    }
     // FluentCRM API
     if (!function_exists('FluentCrmApi')) {
         return ['log' => 'FluentCRM not installed or API missing.', 'log_level' => 'error'];
@@ -62,7 +69,11 @@ function bgfci_process_fluentcrm_contact($payload) {
     $contact = $api->getContact($email);
     if ($contact && !empty($contact->id)) {
         // Update only custom fields
-        $result = $api->update($contact->id, [ 'custom_values' => $custom_fields ]);
+        $update_data = [ 'custom_values' => $custom_fields ];
+        if (!empty($lists)) {
+            $update_data['lists'] = $lists;
+        }
+        $result = $api->update($contact->id, $update_data);
         bgfci_log('FluentCRM API update() result: ' . print_r($result, true), 'debug');
         return [
             'log' => "Updated custom fields for existing FluentCRM contact ID {$contact->id} (email: $email)",
@@ -71,6 +82,9 @@ function bgfci_process_fluentcrm_contact($payload) {
     } else {
         // Create new contact with all fields
         $data = array_merge($standard_fields, [ 'custom_values' => $custom_fields ]);
+        if (!empty($lists)) {
+            $data['lists'] = $lists;
+        }
         $result = $api->createOrUpdate($data);
         bgfci_log('FluentCRM API createOrUpdate() result: ' . print_r($result, true), 'debug');
         return [

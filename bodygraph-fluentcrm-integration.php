@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-require_once __DIR__ . '/bgfcfi-fluentcrm-mapping.php';
+require_once __DIR__ . '/includes/class-bgfci-mapping.php';
 require_once __DIR__ . '/admin-settings.php';
 /**
  * Custom logging function for BGFCI plugin.
@@ -31,7 +31,7 @@ require_once __DIR__ . '/admin-settings.php';
  */
 
 
-require_once __DIR__ . '/bgfcfi-fluentcrm-mapping.php';
+require_once __DIR__ . '/includes/class-bgfci-mapping.php';
 require_once __DIR__ . '/admin-settings.php';
 
 // Test the logger on plugin load
@@ -76,7 +76,7 @@ function bgfci_receive_webhook( $request ) {
         // Sanitize and validate input
         if ($is_json && isset($payload['EmailAddress'])) {
             $payload['EmailAddress'] = sanitize_email($payload['EmailAddress']);
-            $result = bgfci_process_fluentcrm_contact($payload);
+            $result = BGFCI_Mapping::process_fluentcrm_contact($payload);
             BGFCI_Logger::log($result['log'], $result['log_level']);
             $success = ($result['log_level'] === 'info');
             $message = $result['log'];

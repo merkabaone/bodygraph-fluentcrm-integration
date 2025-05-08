@@ -1,4 +1,4 @@
-# BodyGraph FluentCRM Integration
+# BodyGraph + FluentCRM integration
 
 A secure, modular WordPress plugin that integrates BodyGraph API webhooks with FluentCRM for Human Design chart data management and email validation workflows.
 
@@ -9,10 +9,7 @@ A secure, modular WordPress plugin that integrates BodyGraph API webhooks with F
 - **FluentCRM contact management** (create/update, custom fields)
 - **Configurable logging**: Only log summaries by default, or enable full debug logs in settings
 - **Email validation workflow**
-- **Custom database staging/logging**
-- **Asynchronous processing (Action Scheduler)**
 - **Security**: Input validation, nonce & capability checks, output escaping, IP rate limiting
-- **Modular codebase**: Logger and FluentCRM integration are in dedicated classes
 
 ## Requirements
 - WordPress 5.0+
@@ -25,7 +22,7 @@ A secure, modular WordPress plugin that integrates BodyGraph API webhooks with F
 2. Activate the plugin in WordPress admin
 3. Configure plugin settings in WordPress admin (List ID, Debug Logs)
 
-## Configuration & Usage
+## Configuration & usage
 - Set up the webhook endpoint in BodyGraph:
     - Go to **WordPress Admin > Settings > BodyGraph FluentCRM**.
     - Copy the **Webhook Endpoint URL** displayed at the top. It will look like:
@@ -34,26 +31,10 @@ A secure, modular WordPress plugin that integrates BodyGraph API webhooks with F
       
     - Paste this URL into your BodyGraph API/Webhook configuration.
     - This is where BodyGraph will POST Human Design chart data for each user.
-- Configure **FluentCRM List ID** (required):
+- Specify **FluentCRM List ID** (required):
     - Enter the List ID to which new/updated contacts should be assigned.
-- Enable or disable **Detailed Debug Logs** as needed:
-    - If enabled, all debug-level logs are written to `bgfci.log` in the plugin directory. Otherwise, only summaries and contact update events are logged.
 
-### Webhook Endpoint Details
-- The endpoint URL is always:
-  
-  `https://<your-site-domain>/wp-json/bodygraph-fluentcrm/v1/webhook`
-  
-- You can always find and copy this URL from the plugin settings page.
-- The endpoint accepts POST requests with a JSON payload matching the BodyGraph API format.
-
-### Example BodyGraph Webhook Setup
-1. In your BodyGraph dashboard/API settings, add a new webhook.
-2. Set the destination URL to the value from plugin settings.
-3. Ensure the webhook is set to POST Human Design chart data in JSON format.
-
-
-## Security & Best Practices
+## Security & best practices
 - **Rate limiting**: Max 10 webhook requests per 10 minutes per IP.
 - **Input validation/sanitization**: All webhook and admin input is sanitized and validated.
 - **Output escaping**: All admin UI output is escaped.
@@ -80,6 +61,3 @@ A secure, modular WordPress plugin that integrates BodyGraph API webhooks with F
 
 ## Support
 For help, bug reports, or questions, email: support@merkaba.one
-
-## License
-[Specify your license here]

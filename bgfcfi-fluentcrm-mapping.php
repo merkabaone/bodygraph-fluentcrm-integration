@@ -2,7 +2,15 @@
 // Map incoming JSON to FluentCRM fields and create/update contact
 function bgfci_process_fluentcrm_contact($payload) {
     // Log that a payload was received
-    bgfci_log('Webhook payload received for FluentCRM processing.', 'info');
+    // Log key fields from payload for debugging
+    $log_fields = [
+        'first_name' => $payload['FirstName'] ?? '',
+        'last_name' => $payload['LastName'] ?? '',
+        'email' => $payload['EmailAddress'] ?? '',
+        'birth_time' => $payload['Properties']['BirthDateLocalStandard'] ?? '',
+        'birth_place' => $payload['BirthPlace'] ?? ''
+    ];
+    bgfci_log('Webhook payload summary: ' . json_encode($log_fields), 'info');
     // Standard FluentCRM fields
     $standard_fields = [
         'prefix' => $payload['NamePrefix'] ?? '',

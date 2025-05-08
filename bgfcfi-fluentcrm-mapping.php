@@ -11,7 +11,12 @@ function bgfci_process_fluentcrm_contact($payload) {
         'last_name' => $payload['LastName'] ?? '',
         'birth_time_local' => $payload['Properties']['BirthDateLocalStandard'] ?? '',
         'birth_time_utc' => $payload['Properties']['BirthDateUtcStandard'] ?? '',
-        'birth_place' => $payload['BirthPlace'] ?? ''
+        'birth_place' => $payload['BirthPlace'] ?? '',
+        'type' => $payload['Properties']['Type']['option'] ?? '',
+        'strategy' => $payload['Properties']['Strategy']['option'] ?? '',
+        'inner_authority' => $payload['Properties']['InnerAuthority']['option'] ?? '',
+        'profile' => $payload['Properties']['Profile']['option'] ?? '',
+        'incarnation_cross' => $payload['Properties']['IncarnationCross']['option'] ?? ''
     ];
     BGFCI_Logger::log('Webhook payload summary: ' . json_encode($log_fields), 'info');
     // Standard FluentCRM fields
@@ -68,6 +73,8 @@ function bgfci_process_fluentcrm_contact($payload) {
         $lists[] = $list_id;
         BGFCI_Logger::log('Applying FluentCRM List ID: ' . $list_id, 'debug');
     }
-    // Delegate to modular FluentCRM integration
+    // For updates: only update custom fields, but always update date_of_birth (standard field)
+    // Pass a special key in $custom_fields to signal this to the FluentCRM integration class
+    $custom_fields['__update_date_of_birth'] = $standard_fields['date_of_birth'];
     return BGFCI_FluentCRM::create_or_update_contact($standard_fields, $custom_fields, $lists);
 }

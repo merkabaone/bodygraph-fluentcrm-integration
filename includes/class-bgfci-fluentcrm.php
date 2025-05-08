@@ -26,6 +26,11 @@ class BGFCI_FluentCRM {
         if ($contact && !empty($contact->id)) {
             $update_data = $custom_fields;
             $update_data['email'] = $email;
+            // If present, update date_of_birth as a standard field (not as a custom field)
+            if (isset($update_data['__update_date_of_birth'])) {
+                $update_data['date_of_birth'] = $update_data['__update_date_of_birth'];
+                unset($update_data['__update_date_of_birth']);
+            }
             $existing_lists = isset($contact->lists) && is_array($contact->lists) ? $contact->lists : [];
             $merged_lists = array_unique(array_merge($existing_lists, $lists));
             if (!empty($merged_lists)) {
@@ -40,7 +45,7 @@ class BGFCI_FluentCRM {
                 BGFCI_Logger::log('FluentCRM API createOrUpdate() result: ' . print_r($result, true), 'debug');
             }
             return [
-                'log' => "Updated FluentCRM contact custom fields (via createOrUpdate).",
+                'log' => "Updated FluentCRM contact custom fields (and birthday) via createOrUpdate.",
                 'log_level' => 'info'
             ];
         } else {

@@ -2,7 +2,7 @@
 /*
 Plugin Name: BodyGraph FluentCRM Integration
 Description: Minimal plugin to expose a REST API endpoint for receiving BodyGraph webhooks. v1.2 barebones.
-Version: 1.2.2
+Version: 1.2.3
 Author: Erik Desrosiers
 */
 
@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+require_once __DIR__ . '/bgfcfi-fluentcrm-mapping.php';
 /**
  * Custom logging function for BGFCI plugin.
  * Logs only if WP_DEBUG is true.
@@ -52,6 +53,7 @@ function bgfci_log($message, $level = 'info') {
     }
 }
 
+require_once __DIR__ . '/bgfcfi-fluentcrm-mapping.php';
 
 // Test the logger on plugin load
 add_action('plugins_loaded', function() {
@@ -88,7 +90,14 @@ function bgfci_receive_webhook( $request ) {
         );
         
         bgfci_log($log_message, 'info');
-        
+
+        // Only proceed if JSON is valid
+        if ($is_json && isset($payload['EmailAddress'])) {
+            $mapping_result = bgfci_process_fluentcrm_contact($payload);
+            bgfci_log($mapping_result['log'], $mapping_result['log_level']);
+        } else {
+            bgfci_log('Webhook payload missing or invalid email address.', 'warning');
+        }
         // Return response with detailed information
         return rest_ensure_response([
             'success' => true,

@@ -39,6 +39,14 @@ function bgfci_render_settings_page() {
             <?php do_settings_sections('bgfci_settings'); ?>
             <table class="form-table">
                 <tr valign="top">
+                    <th scope="row" style="vertical-align:top;">Webhook Endpoint URL</th>
+                    <td>
+                        <?php $webhook_url = site_url('/wp-json/bodygraph-fluentcrm/v1/webhook'); ?>
+                        <input type="text" readonly style="width:100%;font-family:monospace;background:#f8f8f8;" value="<?php echo esc_attr($webhook_url); ?>" onclick="this.select();document.execCommand('copy');" />
+                        <p class="description">Copy this URL and configure it as the webhook endpoint in your BodyGraph API settings. This is where BodyGraph will POST chart data.</p>
+                    </td>
+                </tr>
+                <tr valign="top">
                     <th scope="row"><?php echo esc_html__('FluentCRM List ID', 'bodygraph-fluentcrm-integration'); ?></th>
                     <td>
                         <input type="text" name="bgfci_fluentcrm_list_id" value="<?php echo esc_attr(get_option('bgfci_fluentcrm_list_id', '')); ?>" />

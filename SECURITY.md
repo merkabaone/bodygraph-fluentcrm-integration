@@ -4,6 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.3.x   | :white_check_mark: (latest minor/patch only) |
 | 1.2.x   | :white_check_mark: |
 | 1.1.x   | :white_check_mark: |
 | < 1.1   | :x:                |
@@ -13,7 +14,9 @@
 - **Output escaping**: All admin UI output is escaped.
 - **Nonce and capability checks**: All admin actions/forms are protected by nonces and require admin capability.
 - **Rate limiting**: Webhook endpoint is protected by IP-based rate limiting (10 requests per 10 minutes per IP).
-- **Logging policy**: Only summary logs by default; detailed logs are opt-in. No secrets or sensitive PII are logged.
+- **Webhook endpoint security**: The endpoint URL is visible in plugin settings. Only share this URL with trusted sources and keep it private to prevent abuse.
+- **Logging policy**: Only summary logs by default; detailed logs are opt-in. No secrets or sensitive PII are logged. Logs are written to a dedicated file (`bgfci.log`) and filtered by settings.
+- **Contact update policy**: For existing contacts, only custom fields and the birthday are updated; all other standard fields are ignored for updates.
 - **No secrets in repo**: No hardcoded secrets or sensitive data are committed to the repository.
 
 ## Reporting a Vulnerability

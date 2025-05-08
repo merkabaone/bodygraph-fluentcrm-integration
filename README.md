@@ -78,5 +78,8 @@ A secure, modular WordPress plugin that integrates BodyGraph API webhooks with F
 4. Push to the branch
 5. Create a Pull Request
 
+## Support
+For help, bug reports, or questions, email: support@merkaba.one
+
 ## License
 [Specify your license here]

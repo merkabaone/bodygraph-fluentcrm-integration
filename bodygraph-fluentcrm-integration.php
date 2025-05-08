@@ -19,19 +19,45 @@ add_action( 'rest_api_init', function () {
 });
 
 function bgfci_receive_webhook( $request ) {
-    $params = $request->get_json_params();
-    // Compose a simple log message
-    $log_message = sprintf(
-        'Webhook received at %s. Payload keys: %s',
-        date('Y-m-d H:i:s'),
-        is_array($params) ? implode(", ", array_keys($params)) : 'No JSON payload.'
-    );
-    error_log( '[BGFCI] ' . $log_message );
-    // Return a response for debugging
-    return rest_ensure_response([
-        'success' => true,
-        'message' => 'Webhook received',
-        'received_at' => date('c'),
-        'payload_keys' => is_array($params) ? array_keys($params) : [],
-    ]);
+    try {
+        // Get raw request body
+        $raw_body = file_get_contents('php://input');
+        
+        // Try to decode JSON
+        $payload = json_decode($raw_body, true);
+        $is_json = json_last_error() === JSON_ERROR_NONE;
+        
+        // Log the complete request
+        $log_message = sprintf(
+            "Webhook received at %s\n" .
+            "Raw Body: %s\n" .
+            "Is JSON: %s\n" .
+            "JSON Payload: %s",
+            date('Y-m-d H:i:s'),
+            $raw_body,
+            $is_json ? 'Yes' : 'No',
+            $is_json ? print_r($payload, true) : 'Not JSON'
+        );
+        
+        error_log('[BGFCI] ' . $log_message);
+        
+        // Return response with detailed information
+        return rest_ensure_response([
+            'success' => true,
+            'message' => 'Webhook received',
+            'received_at' => date('c'),
+            'raw_body' => $raw_body,
+            'is_json' => $is_json,
+            'payload' => $is_json ? $payload : null,
+            'headers' => getallheaders()
+        ]);
+        
+    } catch (Exception $e) {
+        error_log('[BGFCI] Webhook error: ' . $e->getMessage());
+        return rest_ensure_response([
+            'success' => false,
+            'message' => 'Error processing webhook',
+            'error' => $e->getMessage()
+        ], 500);
+    }
 }

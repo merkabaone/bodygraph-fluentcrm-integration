@@ -1,6 +1,8 @@
 <?php
 // Map incoming JSON to FluentCRM fields and create/update contact
 function bgfci_process_fluentcrm_contact($payload) {
+    // Log that a payload was received
+    bgfci_log('Webhook payload received for FluentCRM processing.', 'info');
     // Standard FluentCRM fields
     $standard_fields = [
         'prefix' => $payload['NamePrefix'] ?? '',
@@ -45,6 +47,9 @@ function bgfci_process_fluentcrm_contact($payload) {
         'company' => $payload['Company'] ?? '',
         'role' => $payload['Role'] ?? '',
     ];
+    // Log the mapped fields to be sent to FluentCRM
+    bgfci_log('FluentCRM standard fields to input: ' . print_r($standard_fields, true), 'debug');
+    bgfci_log('FluentCRM custom fields to input: ' . print_r($custom_fields, true), 'debug');
     // FluentCRM API
     if (!function_exists('FluentCrmApi')) {
         return ['log' => 'FluentCRM not installed or API missing.', 'log_level' => 'error'];
@@ -58,6 +63,7 @@ function bgfci_process_fluentcrm_contact($payload) {
     if ($contact && !empty($contact->id)) {
         // Update only custom fields
         $result = $api->update($contact->id, [ 'custom_values' => $custom_fields ]);
+        bgfci_log('FluentCRM API update() result: ' . print_r($result, true), 'debug');
         return [
             'log' => "Updated custom fields for existing FluentCRM contact ID {$contact->id} (email: $email)",
             'log_level' => 'info'
@@ -66,6 +72,7 @@ function bgfci_process_fluentcrm_contact($payload) {
         // Create new contact with all fields
         $data = array_merge($standard_fields, [ 'custom_values' => $custom_fields ]);
         $result = $api->createOrUpdate($data);
+        bgfci_log('FluentCRM API createOrUpdate() result: ' . print_r($result, true), 'debug');
         return [
             'log' => "Created new FluentCRM contact for $email with standard & custom fields.",
             'log_level' => 'info'

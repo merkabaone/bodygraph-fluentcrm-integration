@@ -1,0 +1,59 @@
+# WordPress specific
+wp-config.php
+*.log
+sitemap.xml
+sitemap.xml.gz
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+*.zip
+*.tar.gz
+
+# Plugin specific
+*.php.bak
+*.php.save
+*.php~
+*.php.swp
+*.php.swo
+
+# Database
+*.sql
+*.sql.gz
+*.sql.zip
+
+# Local development
+local-config.php
+
+npm-debug.log
+
+# Build files
+dist/
+build/
+# Plugin Specific - CRITICAL
+# config.php
+# bgfc-config.php
+debug.log
+
+# Compiled assets
+# css/main.css.map
+
+# Backup files
+*~
+*.bak
+*.tmp
+
+# Archives
+*.zip
+*.tar.gz
+*.rar

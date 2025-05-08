@@ -2,7 +2,7 @@
 /*
 Plugin Name: BodyGraph FluentCRM Integration
 Description: Minimal plugin to expose a REST API endpoint for receiving BodyGraph webhooks. v1.2 barebones.
-Version: 1.2.5
+Version: 1.2.6
 Author: Erik Desrosiers
 */
 
@@ -79,36 +79,25 @@ function bgfci_receive_webhook( $request ) {
         $payload = json_decode($raw_body, true);
         $is_json = json_last_error() === JSON_ERROR_NONE;
         
-        // Log the complete request
-        $log_message = sprintf(
-            "Webhook received at %s\n" .
-            "Raw Body: %s\n" .
-            "Is JSON: %s\n" .
-            "JSON Payload: %s",
-            date('Y-m-d H:i:s'),
-            $raw_body,
-            $is_json ? 'Yes' : 'No',
-            $is_json ? print_r($payload, true) : 'Not JSON'
-        );
-        
-        bgfci_log($log_message, 'info');
+        // Log that a webhook payload was received
+        bgfci_log('Webhook payload received at endpoint.', 'info');
 
-        // Only proceed if JSON is valid
+        $result = null;
+        $success = false;
+        $message = '';
         if ($is_json && isset($payload['EmailAddress'])) {
-            $mapping_result = bgfci_process_fluentcrm_contact($payload);
-            bgfci_log($mapping_result['log'], $mapping_result['log_level']);
+            $result = bgfci_process_fluentcrm_contact($payload);
+            bgfci_log($result['log'], $result['log_level']);
+            $success = ($result['log_level'] === 'info');
+            $message = $result['log'];
         } else {
-            bgfci_log('Webhook payload missing or invalid email address.', 'warning');
+            $message = 'Webhook payload missing or invalid email address.';
+            bgfci_log($message, 'warning');
         }
-        // Return response with detailed information
         return rest_ensure_response([
-            'success' => true,
-            'message' => 'Webhook received',
-            'received_at' => date('c'),
-            'raw_body' => $raw_body,
-            'is_json' => $is_json,
-            'payload' => $is_json ? $payload : null,
-            'headers' => getallheaders()
+            'success' => $success,
+            'message' => $message,
+            'received_at' => date('c')
         ]);
         
     } catch (Exception $e) {
